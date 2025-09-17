@@ -3,6 +3,9 @@ from omegaconf import DictConfig, OmegaConf
 
 from dataset import prepare_dataset
 
+from client import generate_client_fn
+from typing import Dict
+
 @hydra.main(config_path="conf", config_name="base", version_base=None)
 def main(cfg: DictConfig):
 
@@ -12,8 +15,9 @@ def main(cfg: DictConfig):
     ## 2. Prepare your dataset
     trainloaders,validateloaders,testloader = prepare_dataset(cfg.num_clients,cfg.batch_size)
 
-    print(len(trainloaders),len(validateloaders),len(testloader),len(trainloaders[0]),len(validateloaders[0]),len(testloader))
+    
     ## 3. Define your clients
+    client_fn = generate_client_fn(trainloaders, validateloaders, num_classes=10)
     ## 4. Define your strategy
     ## 5. Start Simulation
     ## 6. Save your results
