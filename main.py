@@ -1,7 +1,8 @@
 import hydra
 from omegaconf import DictConfig, OmegaConf
-
+import flwr as fl
 from dataset import prepare_dataset
+from server import get_on_fit_config, get_evaluate_fn
 
 from client import generate_client_fn
 from typing import Dict
@@ -18,7 +19,18 @@ def main(cfg: DictConfig):
     
     ## 3. Define your clients
     client_fn = generate_client_fn(trainloaders, validateloaders, num_classes=10)
+
+
     ## 4. Define your strategy
+    strategy = fl.server.strategy.FedAvg(fraction_fit=0.00001,
+                                         min_fit_clients=cfg.num_clients_per_round_fit,
+                                         fraction_evaluate=0.00001,
+                                         min_evaluate_clients=cfg.num_clients_per_round_eval,
+                                         min_available_clients=cfg.num_clients,
+                                         on_fit_config_fn=get_on_fit_config(cfg.config_fit),
+                                         evaluate_fn=get_evaluate_fn(cfg.num_classes,testloader)
+                                         )
+    
     ## 5. Start Simulation
     ## 6. Save your results
 
